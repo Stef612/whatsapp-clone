@@ -4,8 +4,9 @@ import Sidebar from "./Sidebar";
 import Chat from "./Chat";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./Login";
+import { UseStateValue } from "./StateProvider";
 function App() {
-  const [user, setUser] = useState(null);
+  const [{ user }, dispatch] = UseStateValue();
   return (
     // BEM naming convention
     <div className="App">

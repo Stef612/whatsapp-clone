@@ -3,11 +3,16 @@ import React from "react";
 import "./Login.css";
 import logo from "./whatsapp-logo.png";
 import { auth, provider } from "./firebase";
+import { UseStateValue } from "./StateProvider";
+import { actionTypes } from "./reducer";
 function Login() {
+  const [{}, dispatch] = UseStateValue();
   const signIn = () => {
     auth
       .signInWithPopup(provider)
-      .then((result) => console.log(result))
+      .then((result) => {
+        dispatch({ type: actionTypes.SET_USER, user: result.user });
+      })
       .catch((error) => alert(error.message));
   };
   return (

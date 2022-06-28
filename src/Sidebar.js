@@ -7,8 +7,10 @@ import "./Sidebar.css";
 import IconButton from "@material-ui/core/IconButton";
 import SidebarChat from "./SidebarChat";
 import db from "./firebase";
+import { UseStateValue } from "./StateProvider";
 
 function Sidebar() {
+  const [{ user }, dispatch] = UseStateValue();
   const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
@@ -20,7 +22,7 @@ function Sidebar() {
   return (
     <div className="sidebar">
       <div className="sidebar__header">
-        <Avatar />
+        <Avatar src={user?.photoURL} />
         <div className="sidebar__headerRight">
           <IconButton>
             <DonutLarge />

@@ -12,23 +12,45 @@ import InsertEmoticonIcon from "@mui/icons-material/InsertEmoticon";
 import MicIcon from "@mui/icons-material/Mic";
 import { useParams } from "react-router-dom";
 import db from "./firebase";
+import firebase from "./firebase";
+import { UseStateValue } from "./StateProvider";
+import { updateDoc, serverTimestamp } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 
 function Chat() {
   const [input, setInput] = useState("");
   const { roomId } = useParams();
   const [roomName, setRoomName] = useState("");
+  const [messages, setMessages] = useState([]);
+  const [{ user }, dispatch] = UseStateValue();
   useEffect(() => {
     if (roomId) {
       db.collection("rooms")
         .doc(roomId)
         .onSnapshot((snapshot) => setRoomName(snapshot.data().name));
+
+      db.collection("rooms")
+        .doc(roomId)
+        .collection("messages")
+        .orderBy("timestamp", "asc")
+        .onSnapshot((snapshot) =>
+          setMessages(snapshot.docs.map((doc) => doc.data()))
+        );
     }
   }, [roomId]);
-  console.log(roomId);
 
   const sendMessage = (e) => {
     e.preventDefault();
     console.log(input);
+
+    db.collection("rooms").doc(roomId).collection("messages").add({
+      message: input,
+      name: user.displayName,
+      timestamp: serverTimestamp(),
+    });
+
+    console.log(messages[messages.length - 1]);
+
     setInput("");
   };
 
@@ -42,7 +64,13 @@ function Chat() {
         />
         <div className="chat__headerInfo">
           <h3>{roomName}</h3>
-          <p>Last seen at...</p>
+          <p>
+            Last activity...{" "}
+            {messages[messages.length - 1] &&
+              new Date(
+                messages[messages.length - 1].timestamp?.toDate()
+              ).toUTCString()}
+          </p>
         </div>
         <div className="class__headerRight">
           <IconButton>
@@ -57,11 +85,21 @@ function Chat() {
         </div>
       </div>
       <div className="chat__body">
-        <p className={`chat__message ${true && "chat__reciever"}`}>
-          <span className="chat__name">Stef Gkotsis</span>
-          hey guys<span className="chat__timeStamp">15:45</span>
-        </p>
-        <p className="chat__message">hey guys</p>
+        {messages.map((message) => (
+          <div>
+            <p
+              className={`chat__message ${
+                message.name === user.displayName && "chat__reciever"
+              }`}
+            >
+              <span className="chat__name">{message.name}</span>
+              {message.message}
+              <span className="chat__timeStamp">
+                {new Date(message.timestamp?.toDate()).toUTCString()}
+              </span>
+            </p>
+          </div>
+        ))}
       </div>
       <div className="chat__footer">
         <InsertEmoticonIcon />
